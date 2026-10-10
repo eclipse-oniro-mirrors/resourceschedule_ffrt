@@ -592,7 +592,11 @@ ffrt_qos_t ffrt_this_task_get_qos(void)
 API_ATTRIBUTE((visibility("default")))
 uint64_t ffrt_this_task_get_id()
 {
-    auto curTask = ffrt::ExecuteCtx::Cur()->task;
+    auto curCtx = ffrt::ExecuteCtx::Cur<false>();
+    if (curCtx == nullptr) {
+        return 0;
+    }
+    auto curTask = curCtx->task;
     if (curTask == nullptr) {
         return 0;
     }
@@ -739,7 +743,9 @@ uint64_t ffrt_get_cur_cached_task_id(void)
 {
     uint64_t gid = ffrt_this_task_get_id();
     if (gid == 0) {
-        return ffrt::ExecuteCtx::Cur()->lastGid_;
+        if (auto curCtx = ffrt::ExecuteCtx::Cur<false>()) {
+            return curCtx->lastGid_;
+        }
     }
 
     return gid;
