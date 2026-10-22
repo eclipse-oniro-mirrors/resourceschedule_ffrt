@@ -110,7 +110,7 @@ void DelayedWorker::ThreadInit()
         param.sched_priority = 1;
         int ret = pthread_setschedparam(pthread_self(), SCHED_RR, &param);
         if (ret != 0) {
-            FFRT_LOGW("[%d] set priority warn ret[%d] eno[%d]\n", pthread_self(), ret, errno);
+            FFRT_LOGW("[%lu] set priority warn ret[%d] eno[%d]\n", pthread_self(), ret, errno);
         } else {
             FFRT_LOGW("delayedWorker init");
         }
@@ -285,7 +285,7 @@ FFRT_NOINLINE int DelayedWorker::HandleWorkImpl(
     lock.unlock();
     (*w.cb)(w.we);
     lock.lock();
-    FFRT_COND_DO_ERR(toExit, return -1, "HandleWork exit, map size:%d", map.size());
+    FFRT_COND_DO_ERR(toExit, return -1, "HandleWork exit, map size:%lu", map.size());
     TimePoint endTp = std::chrono::steady_clock::now();
     if (GetBetaVersionFlag()) {
         CheckTimeInterval(startTp, endTp);
