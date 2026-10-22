@@ -257,7 +257,7 @@ int BasePoller::WaitFdEvent(struct epoll_event* eventsVec, int maxevents, int ti
         int cachedNfds = FetchCachedEventAndDoUnmask(task, eventsVec);
         if (cachedNfds > 0) {
             mapMutex_.unlock();
-            FFRT_LOGD("task[%s] id[%d] has [%d] cached events, return directly",
+            FFRT_LOGD("task[%s] id[%lu] has [%d] cached events, return directly",
                 task->GetLabel().c_str(), task->gid, cachedNfds);
             task->Wake();
             return cachedNfds;
@@ -278,7 +278,7 @@ int BasePoller::WaitFdEvent(struct epoll_event* eventsVec, int maxevents, int ti
         }
         mapMutex_.unlock();
         task->waitCond_.wait(lck);
-        FFRT_LOGD("task[%s] id[%d] has [%d] events", task->GetLabel().c_str(), task->gid, nfds);
+        FFRT_LOGD("task[%s] id[%lu] has [%d] events", task->GetLabel().c_str(), task->gid, nfds);
         task->Wake();
         return nfds;
     }
@@ -289,7 +289,7 @@ int BasePoller::WaitFdEvent(struct epoll_event* eventsVec, int maxevents, int ti
         int cachedNfds = FetchCachedEventAndDoUnmask(task, eventsVec);
         if (cachedNfds > 0) {
             mapMutex_.unlock();
-            FFRT_LOGD("task[%s] id[%d] has [%d] cached events, return directly",
+            FFRT_LOGD("task[%s] id[%lu] has [%d] cached events, return directly",
                 task->GetLabel().c_str(), task->gid, cachedNfds);
             nfds = cachedNfds;
             return false;
@@ -311,7 +311,7 @@ int BasePoller::WaitFdEvent(struct epoll_event* eventsVec, int maxevents, int ti
         // The ownership of the task belongs to waitTaskMap_, and the task cannot be accessed any more.
         return true;
     });
-    FFRT_LOGD("task[%s] id[%d] has [%d] events", task->GetLabel().c_str(), task->gid, nfds);
+    FFRT_LOGD("task[%s] id[%lu] has [%d] events", task->GetLabel().c_str(), task->gid, nfds);
     return nfds;
 }
 

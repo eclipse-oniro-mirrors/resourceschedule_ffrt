@@ -155,7 +155,7 @@ int WaitQueue::SuspendAndWaitUntil(mutexPrivate* lk, const TimePoint& tp) noexce
                 return;
             }
         }
-        FFRT_LOGD("task(%d) time is up", task->gid);
+        FFRT_LOGD("task(%lu) time is up", task->gid);
         CoWake(static_cast<CoTask*>(task), CoWakeType::TIMEOUT_WAKE);
     });
     FFRT_BLOCK_TRACER(task->gid, cnt);
