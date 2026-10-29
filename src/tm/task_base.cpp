@@ -41,6 +41,11 @@ void ExecuteTask(TaskBase* task)
     ctx->task = task;
     ctx->lastGid_ = task->gid;
 
+    // record executing thread kernel tid for dfx dump
+    if (task->type == ffrt_normal_task || task->type == ffrt_queue_task) {
+        static_cast<CoTask*>(task)->executingTid.store(ctx->tid);
+    }
+    
     // run task with coroutine
     if (USE_COROUTINE && isCoTask) {
         while (CoStart(static_cast<CoTask*>(task), GetCoRoutineEnv()) != 0) {

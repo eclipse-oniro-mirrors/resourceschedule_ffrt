@@ -23,7 +23,7 @@
 #include "internal_inc/osal.h"
 #include "dfx/log/ffrt_log_api.h"
 
-#if (defined(QOS_WORKER_FRAME_RTG) || defined(QOS_FRAME_RTG))
+#if defined(QOS_WORKER_FRAME_RTG)
 
 struct IntervalReply {
     int rtgId;
@@ -198,4 +198,4 @@ static int AddThreadToRtgAdapter(int tid, int grpId, int prioType = 0)
 #error "Unsupported architecture"
 #endif
 #endif /* __FFRT_TASKCLIENT_ADAPTER_H__ */
-#endif /* QOS_FRAME_RTG */
+#endif /* QOS_WORKER_FRAME_RTG */

@@ -44,15 +44,6 @@ struct WorkGroup {
     WgType type;
 };
 
-#if (defined(QOS_FRAME_RTG))
-
-struct WorkGroup* WorkgroupCreate(uint64_t interval, int qos);
-int WorkgroupClear(struct WorkGroup* wg);
-bool JoinWG(int tid, int qos);
-bool LeaveWG(int tid, int qos);
-
-#else
-
 #ifdef QOS_WORKER_FRAME_RTG
     WorkGroup* CreateRSWorkGroup(uint64_t interval, int qos);
     bool JoinRSWorkGroup(int tid, int qos);
@@ -112,16 +103,6 @@ inline bool LeaveWG(int tid, int qos)
     return true;
 }
 
-#endif
-
-#if defined(QOS_FRAME_RTG)
-
-void WorkgroupStartInterval(struct WorkGroup* wg);
-void WorkgroupStopInterval(struct WorkGroup* wg);
-void WorkgroupJoin(struct WorkGroup* wg, int tid);
-
-#else /* !QOS_FRAME_RTG */
-
 inline void WorkgroupStartInterval(struct WorkGroup* wg)
 {
     if (wg->started) {
@@ -143,7 +124,5 @@ inline void WorkgroupJoin(struct WorkGroup* wg, int tid)
     (void)wg;
     (void)tid;
 }
-
-#endif /* QOS_FRAME_RTG */
 }
 #endif

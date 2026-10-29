@@ -32,7 +32,6 @@
 #include "sync/sync.h"
 #include "util/slab.h"
 #include "sched/sched_deadline.h"
-#include "sync/perf_counter.h"
 #include "dfx/bbox/bbox.h"
 #include "dfx/trace_record/ffrt_trace_record.h"
 #include "eu/co_routine_factory.h"

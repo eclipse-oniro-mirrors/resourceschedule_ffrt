@@ -183,6 +183,7 @@ public:
     CoRoutine* coRoutine = nullptr;
     uint64_t stack_size = STACK_SIZE;
     std::atomic<pthread_t> runningTid = 0;
+    std::atomic<int32_t> executingTid = 0; // 执行该任务的县城内核 tid，EXECUTING 时有效（dfx打印用）
     int legacyCountNum = 0; // dynamic switch controlled by set_legacy_mode api
     std::mutex mutex_; // used in coroute
     std::condition_variable waitCond_; // cv for thread wait

@@ -15,6 +15,9 @@
 
 #include <thread>
 #include <chrono>
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 #include <gtest/gtest.h>
 #include "ffrt_inner.h"
 #include "c/queue_ext.h"
@@ -27,6 +30,8 @@
 #include "util/spmc_queue.h"
 #include "util/ffrt_facade.h"
 #include "util/white_list.h"
+#include "cpp/sleep.h"
+#include "tm/task_base.h"
 
 using namespace std;
 using namespace ffrt;
@@ -1597,6 +1602,8 @@ HWTEST_F(QueueTest, ffrt_queue_with_legacy_mode, TestSize.Level0)
         ffrt::TaskBase* task = ffrt::ExecuteCtx::Cur()->task;
         EXPECT_EQ(static_cast<ffrt::QueueTask*>(task)->coRoutine, nullptr);
         EXPECT_EQ(static_cast<ffrt::QueueTask*>(task)->threadMode_, true);
+        EXPECT_EQ(static_cast<int32_t>(static_cast<ffrt::QueueTask*>(task)->executingTid.load()),
+            static_cast<pid_t>(syscall(SYS_gettid)));
         result++;
     }, ffrt::task_attr("Task_on_Thread"));
     testQueue->wait(handle);
@@ -1605,7 +1612,7 @@ HWTEST_F(QueueTest, ffrt_queue_with_legacy_mode, TestSize.Level0)
 
 /*
  * 测试用例名称 : ffrt_queue_with_legacy_mode_off
- * 测试用例描述 : 队列设置legacymode为true，验证任务在协程上执行
+ * 测试用例描述 : 队列设置legacymode为false，验证任务在协程上执行
  * 操作步骤     : 1、创建队列， attr设置legacymode为false
  *               2、提交队列任务，验证当前是在协程上执行任务
  * 预期结果    : 任务成功执行，任务在协程上执行
@@ -1623,10 +1630,56 @@ HWTEST_F(QueueTest, ffrt_queue_with_legacy_mode_off, TestSize.Level0)
             EXPECT_EQ(static_cast<ffrt::QueueTask*>(task)->coRoutine, nullptr);
         }
         EXPECT_EQ(static_cast<ffrt::QueueTask*>(task)->threadMode_, false);
+        EXPECT_EQ(static_cast<int32_t>(static_cast<ffrt::QueueTask*>(task)->executingTid.load()),
+            static_cast<pid_t>(syscall(SYS_gettid)));
         result++;
     }, ffrt::task_attr("Task_on_Coroutine"));
     testQueue->wait(handle);
     EXPECT_EQ(result, 1);
+}
+
+/*
+ * 测试用例名称 : ffrt_queue_batch_coroutine_tid
+ * 测试用例描述：协程模式下 batch 链跨线程，executingTid 必须跟随当前执行线程内核 tid 更新
+ * 操作步骤    : 1、创建串行队列，默认协程模式
+              2、提交多个队列任务，任务内 sleep_for 前后断言 executingTid 等于当前线程内核 tid
+ * 预期结果    : 任务执行成功，executingTid 与当前执行线程 tid 一致
+ */
+HWTEST_F(QueueTest, ffrt_queue_batch_coroutine_tid, TestSize.Level0)
+{
+    auto testQueue = std::make_unique<ffrt::queue>(ffrt::queue_serial,
+        "serial_coroutine_batch_queue", ffrt::queue_attr());
+    constexpr int TASK_NUM = 4;
+    std::atomic<int> runCount = 0;
+    std::vector<ffrt::task_handle> handles;
+    for (int i = 0; i < TASK_NUM; i++) {
+        auto handle = testQueue->submit_h([&runCount] {
+            ffrt::TaskBase* task = ffrt::ExecuteCtx::Cur()->task;
+            if (USE_COROUTINE) {
+                EXPECT_NE(static_cast<ffrt::QueueTask*>(task)->coRoutine, nullptr);
+            }
+            // sleep 前：executingTid 必须等于当前执行线程内核 tid
+            int32_t execTid = static_cast<ffrt::QueueTask*>(task)->executingTid.load();
+            pid_t curTid = static_cast<pid_t>(syscall(SYS_gettid));
+            printf("ffrt_queue_batch_coroutine_tid: gid=%llu sleep-before executingTid=%d gettid=%d\n",
+                static_cast<unsigned long long>(task->gid), execTid, curTid);
+            EXPECT_EQ(execTid, curTid);
+            ffrt::this_task::sleep_for(std::chrono::milliseconds(1));
+            // sleep 后：协程若跨线程恢复，executingTid 必须跟随更新（batch 链跨线程核心场景）
+            execTid = static_cast<ffrt::QueueTask*>(task)->executingTid.load();
+            pid_t curTidAfter = static_cast<pid_t>(syscall(SYS_gettid));
+            printf("ffrt_queue_batch_coroutine_tid: gid=%llu sleep-after executingTid=%d gettid=%d crossThread=%s\n",
+                static_cast<unsigned long long>(task->gid), execTid, curTidAfter,
+                (curTidAfter != curTid) ? "yes" : "no");
+            EXPECT_EQ(execTid, curTidAfter);
+            runCount++;
+        }, ffrt::task_attr("Batch_Task_on_Coroutine"));
+        handles.push_back(handle);
+    }
+    for (auto& h : handles) {
+        testQueue->wait(h);
+    }
+    EXPECT_EQ(runCount.load(), TASK_NUM);
 }
 
 /*
