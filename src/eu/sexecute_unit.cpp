@@ -27,7 +27,6 @@
 #include "sched/workgroup_internal.h"
 #include "util/ffrt_facade.h"
 #include "util/slab.h"
-#include "dfx/perf/ffrt_perf.h"
 #include "dfx/sysevent/sysevent.h"
 #include "internal_inc/config.h"
 

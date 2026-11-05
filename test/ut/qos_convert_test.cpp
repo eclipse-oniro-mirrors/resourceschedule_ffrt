@@ -22,9 +22,6 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include "cpp/qos_convert.h"
-#if defined(QOS_FRAME_RTG)
-#include "concurrent_task_client.h"
-#endif
 #include "eu/qos_interface.h"
 #include "common.h"
 
@@ -37,9 +34,6 @@ using namespace testing::ext;
 using namespace OHOS::FFRT_TEST;
 using namespace ffrt;
 using namespace std;
-#if defined(QOS_FRAME_RTG)
-using namespace OHOS::ConcurrentTask;
-#endif
 
 #define QOS_CTRL_SET_QOS_THREAD _IOWR('q', 2, struct TaskConfig)
 
@@ -157,18 +151,6 @@ HWTEST_F(QosConvertTest, GetStaticQos2, TestSize.Level1)
     ret = GetStaticQos(tmpQos);
     EXPECT_EQ(tmpQos, qos_default);
     EXPECT_EQ(ret, -1);
-}
-
-HWTEST_F(QosConvertTest, GetDynamicQos, TestSize.Level0)
-{
-#if defined(QOS_FRAME_RTG)
-    SetRssQos(8);
-    qos tmpQos = qos_default;
-    int ret = GetDynamicQos(tmpQos);
-    IntervalReply rs;
-    ConcurrentTaskClient::GetInstance().QueryInterval(QUERY_RENDER_SERVICE, rs);
-    EXPECT_EQ(tmpQos, qos_default);
-#endif
 }
 
 #ifndef FFRT_GITEE

@@ -35,30 +35,12 @@ bool mutexPrivate::try_lock()
 {
     int v = sync_detail::UNLOCK;
     bool ret = l.compare_exchange_strong(v, sync_detail::LOCK, std::memory_order_acquire, std::memory_order_relaxed);
-#ifdef FFRT_MUTEX_DEADLOCK_CHECK
-    if (ret) {
-        uint64_t task = ExecuteCtx::Cur()->task ? reinterpret_cast<uint64_t>(ExecuteCtx::Cur()->task) : GetTid();
-        MutexGraph::Instance().AddNode(task, 0, false);
-        owner.store(task, std::memory_order_relaxed);
-    }
-#endif
     return ret;
 }
 
 void mutexPrivate::lock()
 {
     FFRT_PERF_TRACE_SCOPED_BY_GROUP(SYNC, Mutex_Lock, DEFAULT_CONFIG);
-#ifdef FFRT_MUTEX_DEADLOCK_CHECK
-    uint64_t task;
-    uint64_t ownerTask;
-    task = ExecuteCtx::Cur()->task ? reinterpret_cast<uint64_t>(ExecuteCtx::Cur()->task) : GetTid();
-    ownerTask = owner.load(std::memory_order_relaxed);
-    if (ownerTask) {
-        MutexGraph::Instance().AddNode(task, ownerTask, true);
-    } else {
-        MutexGraph::Instance().AddNode(task, 0, false);
-    }
-#endif
     int v = sync_detail::UNLOCK;
     if (l.compare_exchange_strong(v, sync_detail::LOCK, std::memory_order_acquire, std::memory_order_relaxed)) {
         goto lock_out;
@@ -71,9 +53,6 @@ void mutexPrivate::lock()
     }
 
 lock_out:
-#ifdef FFRT_MUTEX_DEADLOCK_CHECK
-    owner.store(task, std::memory_order_relaxed);
-#endif
     return;
 }
 
@@ -205,11 +184,6 @@ void RecursiveMutexPrivate::unlock()
 void mutexPrivate::unlock()
 {
     FFRT_PERF_TRACE_SCOPED_BY_GROUP(SYNC, Mutex_UnLock, DEFAULT_CONFIG);
-#ifdef FFRT_MUTEX_DEADLOCK_CHECK
-    uint64_t ownerTask = owner.load(std::memory_order_relaxed);
-    owner.store(0, std::memory_order_relaxed);
-    MutexGraph::Instance().RemoveNode(ownerTask);
-#endif
     if (l.exchange(sync_detail::UNLOCK, std::memory_order_release) == sync_detail::WAIT) {
         wake();
     }

@@ -23,7 +23,6 @@
 #include <sys/syscall.h>
 #include <sys/resource.h>
 #include "c/thread.h"
-#include "sync/perf_counter.h"
 #include "sync/wait_queue.h"
 #define private public
 #include "eu/cpu_worker.h"

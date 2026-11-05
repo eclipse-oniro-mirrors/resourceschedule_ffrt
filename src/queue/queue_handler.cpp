@@ -316,6 +316,7 @@ int QueueHandler::Cancel(QueueTask* task)
 void QueueHandler::Dispatch(QueueTask* inTask)
 {
     QueueTask* nextTask = nullptr;
+    auto executingTid = inTask->executingTid.load();
     for (QueueTask* task = inTask; task != nullptr; task = nextTask) {
 #ifdef FFRT_ENABLE_HITRACE_CHAIN
         if (task->traceId_.valid == HITRACE_ID_VALID) {
@@ -326,6 +327,11 @@ void QueueHandler::Dispatch(QueueTask* inTask)
         SetTimeoutMonitor(task);
         SetCurTask(task);
         execTaskId_.store(task->gid);
+
+        // reuse the executingTid of chain head inTask (refreshed by ExecuteTask on coroutine resume)
+        if (task != inTask) {
+            task->executingTid.store(executingTid);
+        }
 
         // run user task
         task->SetStatus<TaskStatus::EXECUTING>();

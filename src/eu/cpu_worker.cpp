@@ -19,7 +19,6 @@
 #include <sched.h>
 #include <sys/syscall.h>
 #include "dm/dependence_manager.h"
-#include "dfx/perf/ffrt_perf.h"
 #include "tm/queue_task.h"
 #include "eu/execute_unit.h"
 #include "dfx/sysevent/sysevent.h"
@@ -219,7 +218,6 @@ void CPUWorker::Dispatch(CPUWorker* worker)
 #ifndef OHOS_STANDARD_SYSTEM
     FFRT_LOGI("qos[%d] thread start succ", static_cast<int>(qos));
 #endif
-    FFRT_PERF_WORKER_AWAKE(static_cast<int>(qos));
     worker->WorkerLooper();
     CoWorkerExit();
     eu.WorkerExit(qos());

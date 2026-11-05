@@ -100,8 +100,7 @@ void WaitQueue::SuspendAndWait(mutexPrivate* lk)
         return;
     }
     CoTask* coTask = static_cast<CoTask*>(task);
-    coTask->wue = new (std::nothrow) WaitUntilEntry(task);
-    FFRT_COND_RETURN_VOID(coTask->wue == nullptr, "new WaitUntilEntry failed");
+    coTask->wue = new WaitUntilEntry(task);
     FFRT_BLOCK_TRACER(coTask->gid, cnd);
     CoWait([&](CoTask* task) -> bool {
         std::lock_guard lg(wqlock);

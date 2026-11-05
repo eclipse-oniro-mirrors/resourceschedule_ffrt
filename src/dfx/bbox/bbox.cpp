@@ -226,7 +226,13 @@ static void DumpQueueTask(const char* tag, const std::vector<QueueTask*>& tasks,
     size_t idx = 1;
     for (auto t : tmp) {
         if (t->type == ffrt_queue_task) {
-            FFRT_BBOX_LOG("<%zu/%zu> id %llu qos %d name %s", idx, tmp.size(), t->gid, t->GetQos(), t->label.c_str());
+            if (t->curStatus == TaskStatus::EXECUTING) {
+                FFRT_BBOX_LOG("<%zu/%zu> id %llu qos %d name %s executingTid %d", idx, tmp.size(), t->gid,
+                    t->GetQos(), t->label.c_str(), t->executingTid.load());
+            } else {
+                FFRT_BBOX_LOG("<%zu/%zu> id %llu qos %d name %s", idx, tmp.size(), t->gid, t->GetQos(),
+                    t->label.c_str());
+            }
             idx++;
         }
         if (t->coRoutine && (t->coRoutine->status.load() == static_cast<int>(CoStatus::CO_NOT_FINISH))) {
@@ -781,6 +787,9 @@ void DumpQueueTaskInfo(std::string& ffrtStackInfo, const char* tag, const std::v
         if (t->type == ffrt_queue_task) {
             ss << "<" << idx++ << "/" << tmp.size() << ">" << "id " << t->gid << " qos "
                 << t->GetQos() << " name " << t->GetLabel().c_str();
+            if (t->curStatus == TaskStatus::EXECUTING) {
+                ss << " executingTid " << t->executingTid.load();
+            }
             AppendTaskInfo(ss, t);
             ss << std::endl;
         }
