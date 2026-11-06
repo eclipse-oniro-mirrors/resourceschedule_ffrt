@@ -216,718 +216,179 @@ config("ffrt_test_config") {
   }
 }
 
-ohos_unittest("frame_interval_test") {
-  module_out_path = module_output_path
-  cflags_cc = []
+# Shared template for FFRT unit test targets.
+# Deduplicates the common ohos_unittest boilerplate. Per-target
+# variations are passed via invoker:
+#   sources:             required, test source files (relative to test/ut/)
+#   extra_cflags_cc:     optional, extra compiler flags
+#   extra_include_dirs:  optional, extra include dirs
+#   extra_deps:          optional, extra deps
+#   extra_external_deps: optional, extra external deps
+template("ffrt_ut_target") {
+  ohos_unittest(target_name) {
+    module_out_path = module_output_path
+    configs = []
+    include_dirs = []
+    cflags_cc = []
+    deps = []
+    external_deps = []
 
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
+    configs += [ ":ffrt_test_config" ]
 
-  cflags_cc += ffrt_ut_base_cflags_cc
+    cflags_cc += ffrt_ut_base_cflags_cc
+    if (defined(invoker.extra_cflags_cc)) {
+      cflags_cc += invoker.extra_cflags_cc
+    }
 
-  sources = [ "frame_interval_test.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
+    sources = invoker.sources
+    sources += ffrt_ut_base_sources
+    deps += ffrt_ut_base_deps
 
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
+    if (defined(invoker.extra_include_dirs)) {
+      include_dirs += invoker.extra_include_dirs
+    }
+    if (defined(invoker.extra_deps)) {
+      deps += invoker.extra_deps
+    }
+    external_deps += ffrt_ut_base_external_deps
+    if (defined(invoker.extra_external_deps)) {
+      external_deps += invoker.extra_external_deps
+    }
+
+    if (is_standard_system) {
+      external_deps += gtest_public_external_deps
+    }
+
+    install_enable = true
+    part_name = "ffrt"
   }
-
-  install_enable = true
-  part_name = "ffrt"
 }
 
-ohos_unittest("deadline_test") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "deadline_test.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_dfx") {
+  sources = [ "case/dfx/ut_dfx.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("task_ctx_test") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "task_ctx_test.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_deadline") {
+  sources = [ "case/deadline/ut_deadline.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("ut_coroutine") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_coroutine.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_condition") {
+  sources = [ "case/condition/ut_condition.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("ut_cpu_worker") {
-  module_out_path = module_output_path
-  cflags_cc = []
-  deps = []
-  external_deps = []
+ffrt_ut_target("ut_core") {
+  sources = [ "case/core/ut_core.cpp" ]
+  extra_include_dirs = ["common"]
+}
 
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = ["../testfunc"]
+ffrt_ut_target("ut_coroutine") {
+  sources = [ "case/coroutine/ut_coroutine.cpp" ]
+  extra_include_dirs = ["common"]
+}
 
-  cflags_cc += ffrt_ut_base_cflags_cc
+ffrt_ut_target("ut_csync") {
+  sources = [ "case/sync/ut_csync.cpp" ]
+  extra_include_dirs = ["common"]
+}
 
+ffrt_ut_target("ut_dependency") {
+  sources = [ "case/dependency/ut_dependency.cpp" ]
+  extra_include_dirs = ["common"]
+}
+
+ffrt_ut_target("ut_execute_unit") {
+  sources = [ "case/eu/ut_execute_unit.cpp" ]
+  extra_include_dirs = ["common"]
+}
+
+ffrt_ut_target("ut_ffrt_io") {
+  sources = [ "case/io/ut_ffrt_io.cpp" ]
+  extra_include_dirs = ["common"]
+}
+
+ffrt_ut_target("ut_poller") {
+  sources = [ "case/poller/ut_poller.cpp" ]
+  extra_include_dirs = ["common"]
+}
+
+ffrt_ut_target("ut_interval") {
+  sources = [ "case/interval/ut_interval.cpp" ]
+  extra_include_dirs = ["common"]
+}
+
+ffrt_ut_target("ut_queue") {
   sources = [
-      "testcase/ut_cpu_worker.cpp",
+    "case/queue/ut_queue.cpp",
+    "case/queue/ut_queue_concurrent.cpp",
+    "case/queue/ut_queue_monitor.cpp",
+    "case/queue/ut_queue_apply.cpp",
   ]
-  sources += ffrt_ut_base_sources
-  deps += ffrt_ut_base_deps
-  external_deps += ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("inherit_test") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/inherit_test.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_rtg") {
+  sources = [ "case/sched/ut_rtg.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("multi_workgroup_test") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [ "../testfunc" ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "multi_workgroup_test.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_scheduler") {
+  sources = [ "case/sched/ut_scheduler.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("qos_convert_test") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "qos_convert_test.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  part_name = "ffrt"
+ffrt_ut_target("ut_cpu_worker") {
+  sources = [ "case/sched/ut_cpu_worker.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("qos_interface_test") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "qos_interface_test.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_queue_dump") {
+  sources = [ "case/dfx/ut_queue_dump.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("ut_cgroup_qos") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-  cflags_cc += [ "-DWITH_NO_MOCKER" ]
-
-  sources = [ "testcase/ut_cgroup_qos.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_dump") {
+  sources = [ "case/dfx/ut_dump.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("ut_condition") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [ "../testfunc" ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_condition.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_qos_convert") {
+  sources = [ "case/qos/ut_qos_convert.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("ut_core") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_core.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_whitelist") {
+  sources = [ "case/sched/ut_whitelist.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("ut_csync") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_csync.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_loop") {
+  sources = [ "case/loop/ut_loop.cpp" ]
+  extra_cflags_cc = ["-DWITH_NO_MOCKER"]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("ut_deadline") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_deadline.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_delay_work_deinit") {
+  sources = [ "case/sched/ut_delay_work_deinit.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("ut_dependency") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_dependency.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_cpu_boost") {
+  sources = [ "case/sched/ut_cpu_boost.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("ut_execute_unit") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_execute_unit.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_ffrt_log") {
+  sources = [ "case/task/ut_ffrt_log.cpp" ]
+  extra_include_dirs = ["common"]
 }
 
-ohos_unittest("ut_ffrt_io") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [
-    "testcase/ut_ffrt_io.cpp",
-    "testcase/ut_poller.cpp",
-  ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_interval") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_interval.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_whitelist") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = ["../testfunc"]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [
-    "testcase/ut_whitelist.cpp",
-  ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_loop") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [ "../testfunc" ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-  cflags_cc += [ "-DWITH_NO_MOCKER" ]
-
-  sources = [ "testcase/ut_loop.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = []
-  external_deps += ffrt_ut_base_external_deps
-  external_deps += [ "googletest:gmock" ]
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_queue") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_queue.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_rtg") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [ "../testfunc" ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_rtg.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_scheduler") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_scheduler.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_thread") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [ "../testfunc" ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_thread.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_mem") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [ "../testfunc" ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-  cflags_cc += [ "-DUSE_GTEST" ]
-
-  sources = [
-    "../testfunc/func_pool.cpp",
-    "../testfunc/util.cpp",
-    "testcase/ut_mem.cpp",
-  ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_queue_dump") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [ "../testfunc" ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_queue_dump.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_dump") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [ "../testfunc" ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_dump.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_qos_convert") {
-  module_out_path = module_output_path
-  cflags_cc = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [
-    "../testfunc",
-    "../../include/sched",
-  ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-
-  sources = [ "testcase/ut_qos_convert.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps = ffrt_ut_base_deps
-  external_deps = ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
-}
-
-ohos_unittest("ut_cpu_boost") {
-  module_out_path = module_output_path
-  configs = []
-  include_dirs = []
-  cflags_cc = []
-  deps = []
-  external_deps = []
-
-  configs = [ ":ffrt_test_config" ]
-  include_dirs = [ "../testfunc" ]
-
-  cflags_cc += ffrt_ut_base_cflags_cc
-  cflags_cc += [ "-DWITH_NO_MOCKER" ]
-
-  sources = [ "testcase/ut_cpu_boost.cpp" ]
-  sources += ffrt_ut_base_sources
-  deps += ffrt_ut_base_deps
-  external_deps += ffrt_ut_base_external_deps
-
-  if (is_standard_system) {
-    public_external_deps = gtest_public_external_deps
-  }
-
-  install_enable = true
-  part_name = "ffrt"
+ffrt_ut_target("ut_multi_workgroup") {
+  sources = [ "case/sched/ut_multi_workgroup.cpp" ]
+  extra_cflags_cc = ["-DWITH_NO_MOCKER"]
+  extra_include_dirs = ["common"]
 }
 
 group("ffrt_unittest_ffrt") {
@@ -936,27 +397,18 @@ group("ffrt_unittest_ffrt") {
   deps = []
   if (!is_asan) {
     deps += [
-      ":deadline_test",
-      ":frame_interval_test",
-      ":inherit_test",
-      ":multi_workgroup_test",
-      ":qos_convert_test",
-      ":qos_interface_test",
-      ":task_ctx_test",
-      ":ut_cgroup_qos",
       ":ut_condition",
       ":ut_core",
       ":ut_coroutine",
       ":ut_cpu_boost",
       ":ut_csync",
-      ":ut_deadline",
       ":ut_dependency",
       ":ut_dump",
       ":ut_execute_unit",
       ":ut_ffrt_io",
+      ":ut_poller",
       ":ut_interval",
       ":ut_loop",
-      ":ut_mem",
       ":ut_qos_convert",
       ":ut_queue",
       ":ut_queue_dump",
