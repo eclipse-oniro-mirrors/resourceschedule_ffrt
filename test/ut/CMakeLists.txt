@@ -4,12 +4,9 @@
 set(TARGET_NAME ffrt_ut)
 
 file(GLOB_RECURSE UT_DIR_LIST
-        "testcase/*.cpp"
+        "case/*.cpp"
         "../stub/*.cpp"
 )
-
-file(GLOB_RECURSE CGROUP _SRC "testcase/*_cgroup_qos.cpp")
-list(REMOVE_ITEM UT_DIR_LIST ${CGROUP_SRC})
 
 # third-party googletest
 if (EXISTS ${ROOT_PATH}/third_party/googletest)
