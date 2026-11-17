@@ -37,9 +37,9 @@ void IOTask::Execute()
     if (ret == ffrt_coroutine_ready) {
         SetStatus<TaskStatus::FINISH>();
         work.destroy(work.data);
-        DecDeleteRef();
         FFRT_TASK_END();
         FFRTTraceRecord::TaskDone<ffrt_io_task>(qos_);
+        DecDeleteRef();
         return;
     }
     FFRT_BLOCK_MARKER(gid);
